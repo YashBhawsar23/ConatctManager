@@ -1,9 +1,11 @@
 const asyncHandler = require("express-async-handler");
+const Contact = require("../models/contactModel");
 //@desc Get All conatcts
 //@route GET /api/contacts
 //@access public
 const getContacts = asyncHandler(async (req, res) => {
-  res.status(200).json({ message: "Get All contacts" });
+  const contacts = await Contact.find();
+  res.status(200).json(contacts);
 });
 
 //@desc Create new Conatct
@@ -16,28 +18,56 @@ const createContact = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("All fields are mandatory !");
   }
-  res.status(201).json({ message: "Create Contact" });
+  const contact = await Contact.create({
+    name,
+    email,
+    phone,
+  });
+  res.status(201).json(contact);
 });
 
 //@desc Get Conatct
 //@route POST /api/contacts/:id
 //@access public
 const getContact = asyncHandler(async (req, res) => {
-  res.json({ message: `Get Conatact for ${req.params.id}` });
+  const contact = await Contact.findById(req.params.id);
+  if (!contact) {
+    res.status(404);
+    throw new Error("Contact not found");
+  }
+  res.json(contact);
 });
 
 //@desc Update Contact
 //@route PUT /api/contacts:/id
 //@access public
 const updateContact = asyncHandler(async (req, res) => {
-  res.json({ message: `Update Conatact for ${req.params.id}` });
+  const contact = await Contact.findById(req.params.id);
+  if (!contact) {
+    res.status(404);
+    throw new Error("Contact not found");
+  }
+
+  const updatedContact = await Contact.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
+
+  res.json(updatedContact);
 });
 
 //@desc Delete Contact
 //@route DELETE /api/contacts:/id
 //@access public
 const DeleteContact = asyncHandler(async (req, res) => {
-  res.json({ message: `Delete Conatact for ${req.params.id}` });
+  const contact = await Contact.findById(req.params.id);
+  if (!contact) {
+    res.status(404);
+    throw new Error("Contact not found");
+  }
+  await contact.deleteOne();
+  res.json(contact);
 });
 
 module.exports = {
